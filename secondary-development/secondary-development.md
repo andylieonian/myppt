@@ -31,10 +31,10 @@ highlightStyle:
 ----
 [四川地税](http://182.151.197.163:9011/etax)
 <img src="https://github.com/andylieonian/myppt/blob/master/image/dtmmdl.png?raw=true" class="img-responsive">
-
 ====
-##JavaScript已经成为github上使用最多的语言
-<img src="http://7xjf2l.com2.z0.glb.qiniucdn.com/gitlang.jpg" class="img-responsive">
+* 推广版做了一版适用于广东地税的实现，各地方调用的发送短信接口可能不同，故需要通过本地化来实现。
+* 相关动态密码的控制器为com.foresee.gt3nf.wsbs.web.controller.SmsValidateController
+<img src="https://github.com/andylieonian/myppt/blob/master/image/dtmmdl_pz1.png" class="img-responsive">
 [/magic]
 
 [slide data-transition="moveIn"]
