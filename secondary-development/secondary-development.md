@@ -34,27 +34,15 @@ highlightStyle:
 ====
 * 推广版做了一版适用于广东地税的实现，各地方调用的发送短信接口可能不同，故需要通过本地化来实现。
 * 相关动态密码的控制器为com.foresee.gt3nf.wsbs.web.controller.SmsValidateController
-<img src="https://github.com/andylieonian/myppt/blob/master/image/dtmmdl_pz1.png" class="img-responsive">
+<img src="https://github.com/andylieonian/myppt/blob/master/image/dtmmdl_pz1.png?raw=true" class="img-responsive">
 [/magic]
 
 [slide data-transition="moveIn"]
-
-# node.js功能越来越**强大**
-* 项目管理：**npm**,**grunt**, **gulp**,**bower**, **yeoman** {:&.moveIn}
-* 桌面应用: **node-webkit**
-* Web开发：**express**,**ejs**,hexo, **socket.i**o, restify, **nodeppt**, stylus, **browserify**,**cheerio**
-* 数据库：**mysql**,**mongoose**,**redis**,memcached
-* 工具包: underscore,**moment**,**connect**,later,**log4js**,passport(oAuth),require
-* 异步：**async**,wind,eventProxy,**bluebird**
-* 部署：forever,**pm2**,**nodemon**
-* 测试：**jasmine**,**karma**,**protractor**
-* 跨平台：rio,tty
-* 内核：**cluster**
-* 模板: **jade**,**ejs **
-* 博客: ghost,hexo
-* 微信: weui
-* 硬件控制: NoduinoWeb
-* 操作系统: NodeOS
+[magic data-transition="vertical3d"]
+#
+* 如上图，读取/gt3nf-wsbs/src/env.properties中配置的bean来注入，实现可配置
+<img src="https://github.com/andylieonian/myppt/blob/master/image/dtmmdl_pz2.png?raw=true" class="img-responsive">
+[/magic]
 
 [slide data-transition="bounceIn"]
 
