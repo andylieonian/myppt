@@ -9,7 +9,7 @@ highlightStyle:
 #金三纳服涉税业务二次开发指南
 <small>基础办税</small>
 
-[slide]
+[slide data-transition="bounceIn"]
 #摘要
 * 一 登陆
 	* 用户名密码登陆
@@ -38,14 +38,20 @@ highlightStyle:
 [/magic]
 
 [slide data-transition="moveIn"]
+* 读取/gt3nf-wsbs/src/env.properties中配置的bean来注入，实现可配置
 [magic data-transition="vertical3d"]
-#
-* 如上图，读取/gt3nf-wsbs/src/env.properties中配置的bean来注入，实现可配置
 <img src="https://github.com/andylieonian/myppt/blob/master/image/dtmmdl_pz2.png?raw=true" class="img-responsive">
 [/magic]
 
 [slide data-transition="bounceIn"]
 
+[slide data-transition="moveIn"]
+* 登陆效果
+[magic data-transition="vertical3d"]
+<img src="https://github.com/andylieonian/myppt/blob/master/image/dtmmdl_xg.png?raw=true" class="img-responsive">
+[/magic]
+
+[slide data-transition="bounceIn"]
 # 学习资源
 - [node官网](https://nodejs.org/en/)   {:&.moveIn}
 关注Node版本更新，包括api功能及使用、bug修复、新增特性以及未来的发展趋势
