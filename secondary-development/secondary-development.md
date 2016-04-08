@@ -1,4 +1,4 @@
-title: 金三纳服涉税业务二次开发指南
+title: 国地税联合办税表单引擎
 speaker:  基础办税
 url: http://foresee.com.cn
 transition: cards
@@ -6,284 +6,159 @@ theme: moon
 highlightStyle:
 
 [slide]
-#金三纳服涉税业务二次开发指南
-<small>基础办税</small>
+#国地税联合办税表单引擎
+<small>Beta</small>
 
 [slide data-transition="bounceIn"]
-#摘要
-* 一 登陆
-	* 用户名密码登陆
-	* 动态密码登陆
-	* CA登陆
-* 二 网报页面展现与功能集成
-    * CA签名报文
-    * 验签报文
-	* 对页面展示个性化调整
-* 三 本地服务注入
-[slide]
-
-## 用户名密码登陆 
-* 与主干保持一致
-
-[slide  data-transition="vertical3d"]
+*  表单引擎介绍
+	* plugin-rule-analyse.js --计算规则表达式解析 {:&.moveIn}
+	* plugin-rule-engine.js --执行规则表达式
+	* plugin-tip.js --提示信息
+	* plugin-util.js --工具
+	* plugin-json.js --json解析相关
+	* plugin-logger.js --提示信息
+	* plugin-money-format.js --工具
+	* plugin-validate.js --校验规则
+	* plugin-view-bind.js --数据绑定
+	* plugin-view-drow.js --动态行处理
+	* plugin-function.js --自定义函数（规则表达式已支持自定义函数校验和计算）
+[slide data-transition="bounceIn"]
+* framework.js
+*       /**异步请求data跟rule后初始化视图及绑定事件*/
+		```
+	    $.when(
+            $.getJSON(settings.rulesurl),
+            $.getJSON(settings.dataurl),
+            $.getJSON(settings.validateurl)
+        ).then(function(rules,data,validate){
+            settings.data = data[0];
+       	    settings.rules = rules[0]; //规则
+            settings.validate = validate[0]; //校验
+        	if (data[0] == null) {
+        		$("body").unmask();
+        		Message.errorInfo({
+    				title : "提示", message : "申报表未初始化，请使用【手工初始化】功能初始化申报表。"
+    			});
+        		return;
+        	}
+		}.done() {
+		}
+		```
+* 只有当所有when成功聚集之后，返回promise对象，成功时执行then(),done()方法始终会被执行
+[slide data-transition="vertical3d"]
+* CommonJS规范、AMD规范
+    * 使用require.js实现对模块化功能的定义和加载
+    * define：定义模块
+    ```
+    define(['jquery', 'plugin-util', 'plugin-rule-analyse', 'plugin-view-bind', 'plugin-json'], 
+	    function ($, util, analyse, bind, pluginjson) {
+		/**css样式处理*/
+		function classProcess(target,operator){
+			if(operator=="add"){
+			   $(target).addClass("yellow");
+		   } else if(operator=="remove"){
+		       $(target).removeClass("yellow");
+		   }
+		}
+	    /**对外提供接口**/
+	    return{
+	    	isEmpty:isEmpty,
+	    	hasTip:hasTip,
+	    	deleteTip:deleteTip,
+	    	buildTip: buildTip,
+	    	removeTip:removeTip,
+	    	classProcess:classProcess
+	    };
+	});
+    ```
+[slide data-transition="vertical3d"]
+    * require：加载模块
+```
+require(['jquery', 'plugin-util', 'plugin-rule-engine', 'plugin-view-bind', 'plugin-json','plugin-validate','plugin-tip','plugin-view-drow', 'mask', 'smartmenu'], 
+function ($,util, engine, bind, pluginjson,validate,tip,drow) {
+/*数据绑定*/
+bind.mapping(view, eval(realDataName));
+/*初始化提示*/
+initializeTip(view,dataName);
+/*绑定input输入事件*/
+view.find("input").each(function () {
+    $(this).on("input", function () {
+    	autoChnageMoney(this);
+        var path = dataName + "." + $(this).attr(settings.datatarget);//属性ID
+        var value = util.toNumber($(this).val()); //值强转为number
+        if(util.notEmpty($(this).attr(settings.datatarget))) {//获取同名input索引 如果没有jpath则不处理
+            var index = view.find(util.format("input[jpath='{0}']",
+                $(this).attr(settings.datatarget).replace(".", "\\."))).index(this);
+            pluginjson.setValue(settings.data, path, value, index);//更新json对象中的值
+            if (dataValidate(this,path,index)) { /*校验通过执行规则*/                        
+                engine.excute(view, settings.data, settings.rules, settings.validate,path, dataName);//执行规则
+                validate.process(settings.data,settings.validate,this,path,index);
+                initializeTip(view,dataName);//联动校验其他元素
+            }
+        }
+   });
+});
+ ```
+[slide data-transition="moveIn"]
+## 表单开发过程
+* 准备工作 {:&.moveIn}
+* 得到一份表单原型(xxx.html) 
+* 一份金三xsd格式下的json字符串
+* 根据json层级路径，绑定节点到相应单元格（格式为jpath="x.x.x.x.x"）
+* 配置nssb_dzbd(类似金三的nf_xtgl_bdmbdy)
+* 配置规则表达式,并生成规则文件
+* 
+[slide  data-transition="moveIn"]
 [magic data-transition="vertical3d"]
-##动态密码登陆  
+##表单效果如下
 ----
-[四川地税](http://182.151.197.163:9011/etax)
-<img src="https://github.com/andylieonian/myppt/blob/master/image/dtmmdl.png?raw=true" class="img-responsive">
+[增值税纳税申报表(适用于增值税小规模纳税人)](https://github.com/andylieonian/myppt/blob/master/image/bd.png?raw=true)
+<img src="https://github.com/andylieonian/myppt/blob/master/image/bd.png?raw=true" class="img-responsive">
 ====
-* 推广版做了一版适用于广东地税的实现，各地方调用的发送短信接口可能不同，故需要通过本地化来实现。
-* 相关动态密码的控制器为com.foresee.gt3nf.wsbs.web.controller.SmsValidateController
-<img src="https://github.com/andylieonian/myppt/blob/master/image/dtmmdl_pz1.png?raw=true" class="img-responsive">
+## 动态行处理
+* 表单中的动态行，这里以小规模中附表《增值税减免税申报明细表》为例说明
+```
+//动态行所在table上加样式 
+<table class="zzssyyxgmnsrySbSbbdxxVO.zzsjmssbmxb jmmxb"> zzssyyxgmnsrySbSbbdxxVO.zzsjmssbmxb
+var tr = view.find("table."+key.replace(/\./g,"\\.")).find("tr");//根据样式来找到动态行所在位置
+<tr group="-1">//动态行所在table -><tr>加自定义标签group,用来标识哪一个动态行，
+若只有一个动态行，group="-1"；
+/*配置完html,还需要在plugin-view-drow.js中配置动态行，关键字、行内元素默认值、序号、表头行数、
+表尾行数等信息*/
+	var jsonData = "";
+	/**申报表动态行效果处理**/
+	var jmmxb = new Array("", "xh", 0, 0, 0, 0, 0, "", "xh", 0, 0, 0, 0, 0, 0);
+	var fjs = new Array("", "", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	/*动态行，关键字、行内元素默认值、序号、表头行数、表尾行数*/
+	var dthJsonData = 
+	[{key:"hkyscdd", defaultVals:hkyscdd, xh:-1, thead:8, ttail:0},
+	 {key:"zzssyyxgmnsrySbSbbdxxVO.zzsjmssbmxb", defaultVals:jmmxb, xh:1, thead:4, ttail:1},
+	  {key:"hXZGSB01285Request.fjsSbbdxxVO.fjssbb", defaultVals:fjs, xh:1, thead:4, ttail:1}];
+```
 [/magic]
-
 [slide data-transition="moveIn"]
-* 读取/gt3nf-wsbs/src/env.properties中配置的bean来注入，实现可配置
+## select处理
+```
+/*配置html单元格,mode="mix"表示下拉框以dm|mc 形式显示；jpath为dm在json中路径，xpath为码表路径，
+zpath为mc在json中路径*/
+<select mode="mix" jflag="1" jpath="zzsjmssbmxbjsxmGrid.zzsjmssbmxbjsxmGridlbVO.dm" 
+ xpath="../xml/nf_dm_sb_zzs_jsxzdm.xml" zpath="zzsjmssbmxbjsxmGrid.zzsjmssbmxbjsxmGridlbVO.hmc">
+</select>
+```
+## 根据代码带出对应名称的处理
+```
+/*配置html单元格,jpath为dm在json中路径，xpath为码表路径，
+zpath为mc在json中路径*/
+<input jflag="1" type="text" datatype="string" jpath="sbxxGrid.sbxxGridlbVO.zsxmDm" 
+xpath="../xml/dm_gy_zsxm.xml" zpath="sbxxGrid.sbxxGridlbVO.zsxmMc">
+```
+> 表单使用smartMenu.css来制作右键增加/删除行（屏蔽自带的右键菜单，自己生成）
+----
+[slide  data-transition="moveIn"]
 [magic data-transition="vertical3d"]
-<img src="https://github.com/andylieonian/myppt/blob/master/image/dtmmdl_pz2.png?raw=true" class="img-responsive">
-[/magic]
-
-[slide data-transition="bounceIn"]
-
-[slide data-transition="moveIn"]
-* 登陆效果
-[magic data-transition="vertical3d"]
-<img src="https://github.com/andylieonian/myppt/blob/master/image/dtmmdl_xg.png?raw=true" class="img-responsive">
-[/magic]
-
-[slide data-transition="bounceIn"]
-# 学习资源
-- [node官网](https://nodejs.org/en/)   {:&.moveIn}
-关注Node版本更新，包括api功能及使用、bug修复、新增特性以及未来的发展趋势
-
-- [npm官网](https://www.npmjs.com/)
-可以搜索需要的模块，以及模块的使用说明,参考别人的源代码
-
-- [github](https://www.github.com/)  
-在这里可以找到大量nodejs相关的项目，阅读源码，查看新技术的一手资料
-
-- [stackoverflow](https://www.stackoverflow.com/)  
-如果遇到解决不了的问题可以在此提问,会有很多热情的好友来帮你解答问题的，比如服务异常、配置什么的。
-
-[slide data-transition="rollIn"]
-# 安装node
-[官方主页](https://nodejs.org/en/) 
-<img src="http://7xjf2l.com2.z0.glb.qiniucdn.com/downloadlist.jpg" class="img-responsive">
-
-[slide]
-# 安装配置webstorm
- WebStorm是开发javascript的IDE，并且支持流行的Node.js以及Angular和React等js框架。
-
-[webstorm下载](http://www.jetbrains.com/webstorm/download/index.html)   
-
-[slide]
-
-# 第一个node程序
-* 先编写一个文件  {:&.moveIn}
-
-    ```javascript
-    console.log('zhufengpeixun');
-    ```
-
-* 将文件保存为**zfpx.js**
-* 打开命令行，进行**zfpx.js**所在的目录，执行以下命令:
-    
-    ```bash
-    node zfpx.js
-    ```
-
-* 如果一切正常，你会在命令行下面看到
-
-    ```javascript
-    zhufengpeixun
-    ```
-
-* <span class="hljs-keyword">console</span>是node.js提供的**控制台**对象，其中包含了向标准输出写入的操作,跟浏览器的<span class="hljs-keyword">console</span>功能类似。
-
-* <span class="hljs-keyword">node</span>是可执行程序，可以**解释执行**后面的脚本。
-
-[slide] 
-#REPL
-> （Read–eval–print loop，"读取-求值-输出"循环）
-
-* 在命令行键入node命令，后面没有文件名，可以直接运行各种JavaScript命令。 {:&.moveIn}
-
-    ```javascript
-node
-5+5
-    ```
-
-* 特殊变量下划线（_）表示上一个命令的返回结果。
-    ```javascript
-5+5
-10
-_+5
-15
-    ```  
-* 在REPL中，如果运行一个表达式，会直接在命令行返回结果。如果运行一条语句，就不会有任何输出，因为语句没有返回值。
-    ```javascript
-var name='zfpx';
-undefined
-1+1
-2
-    ```   
-
-[slide] 
-##Node.js中的常见概念
-<img src="http://7xjf2l.com2.z0.glb.qiniucdn.com/nodeeat.jpg" class="img-responsive">
-- 回调 {:&.moveIn}
-- 同步/异步
-- 阻塞/非阻塞
-- 单线程/多线程
-- IO
-- 事件/事件驱动
-- 基于事件驱动的回调
-- 事件循环
-
-[slide] 
-#模块
-
-> **每个**js文件都是一个模块，模块内部声明的变量都是**私有**变量，外部无法访问。
-
-* 创建模块 {:&.moveIn}
-```javascript
-math.js
-```
-
-* 导出模块
-```javascript
-exports.add = function(a,b){return a+b;}
-```
-
-* 加载模块
-```javascript
-var math = require('./math');
-```
-
-* 调用模块
-```javascript
-var sum = math.add(1,2);
-```
-
-[slide] 
-#模块的分类
-* **核心**模块 {:&.moveIn}
-    ```javascript
-    http fs path
-    ```
-
-* **文件**模块
-    ```javascript
-    var math = require('./math');
-    ```
-
-* **第三方**模块
-    ```javascript
-    var async = require('async');
-    ```
-[slide]
-#包和npm
-- **多个**模块可以封装成一个*包*   {:&.moveIn}
-- npm是node.js默认的模块管理器,用来安装和管理node模块 网址为 ```http://npmjs.org```
-- 可以以包的方式通过**npm**安装、卸载、发布包
-
-[slide]
-##如何初始化一个项目
-```bash
-mkdir studynode   创建目录
-cd studynode   进入目录
-npm init  初始化项目描述文件
-```
------
-```json
-{
-"name":"包的名称，必须是唯一的，由小写英文字母、数字和下划线组成，不能包含空格。",
-"description"："包的简要说明。",
-"version":"符合语义化八本识别规范的版本字符串。",
-"keywords"："关键字数组，通常用于搜索。",
-"maintainers":"维护者数组，每个元素要包含name、email（可选）、web（可选）字段。",
-"contributors"："贡献者数组，格式与maintainers相同。包的作者应该是贡献者数组的第一个元素。",
-"bugs"："提交bug的地址，可以是网址或者电子邮件地址。".,
-"licenses":"许可证数组，每个元素要包含type(许可证的名称)和url(链接到许可证文本的地址)字段。",
-"repositories"："仓库托管地址数组。每个元素要包含type(许可证的名称)和url(链接到许可证文本的地址)字段。",
-"dependencies":"包的依赖，一个关联数组，由包名称和版本组成。"
-}
-```
-
-> 注意项目的名称不能是别人已经注册的名称    
-[slide]
-##发布一个项目
-```
-npm adduser
-Username: zhangrenyang
-Password:
-Email: (this IS public) zhang_renyang@126.com
-npm publish
-```
-> 如果注册失败的话可能是因为改了镜像地址了，需要改回来 npm config set registry "http://registry.npmjs.org/" 
-
-
-[slide]
-#npm install(安装第三方模块)
-* 全局安装 {:&.moveIn}
-    直接下载到Node的安装目录中，**各个**项目都可以调用,适合工具模块，比如`gulp`
-
-    ```
-    npm install -global [package name]
-    ```
-
-* 本地安装
-    将一个模块下载到**当前**目录的*node_modules*子目录，然后只有在**当前**目录和它的**子**目录之中，才能调用这个模块
-    
-    ```
-    npm install  [package name]
-    ```
-[slide]
-#全局对象global
-`global`表示Node所在的**全局**环境，类似于浏览器的`window`对象，它及其所有属性都可以在程序的**任何**地方访问。
-
-[slide]
-#conosle(控制台对象)
-
-> 控制台在操作系统中的表现形式为一个操作系统中指定的字符界面，例如，在Windows操作系统中为一个命令提示窗口
-
-* 向**标准输出流**打印字符并以换行符结束   {:&.moveIn}
-```
-console.log([data][, ...])
-```
-* 该命令的作用是返回**信息性**消息
-```
-console.info([data][, ...])
-```
-* 输出红色<span class="hljs-keyword">错误</span>消息
-```
-console.error([data][, ...])
-```
-* 输出<span class="hljs-keyword">警告</span>消息
-```
-console.warn([data][, ...])
-```
-* 输出时间，表示<span class="hljs-string">计时</span>开始结束
-```
-console.time(label)
-console.timeEnd(label)
-```
-
-[slide]
-#fs(文件模块)
-
-* readFileSync方法用于同步读取文件并返回一个字符串
-
-```javascript
-var text = fs.readFileSync(fileName, "utf8");
-```
-
-* readFile方法用于异步读取文件。
-
-```javascript
-fs.readFile(fileName, "utf8",function(err,text){});
-```
-
-[slide]
+##增加/删除效果如下
+----
+[增值税减免税申报明细表](https://github.com/andylieonian/myppt/blob/master/image/dth.png?raw=true)
+<img src="https://github.com/andylieonian/myppt/blob/master/image/dth.png?raw=true" class="img-responsive">
 ##**QA**
 <small>谢谢大家，欢迎大家踊跃提问</small>
