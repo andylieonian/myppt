@@ -1,26 +1,31 @@
 title: 国地税联合办税表单引擎
 speaker:  基础办税
 url: http://foresee.com.cn
-transition: cards
+transition: zoomin
 theme: moon
 highlightStyle:
 
 [slide]
 #国地税联合办税表单引擎
 <small>Beta</small>
-
+<small>2016.04.08</small>
+[slide data-transition="bounceIn"]
+#表单引擎介绍
+#主要模块介绍
+#开发步骤
+#规则表达式
 [slide data-transition="bounceIn"]
 *  表单引擎介绍
-	* plugin-rule-analyse.js --计算规则表达式解析 {:&.moveIn}
-	* plugin-rule-engine.js --执行规则表达式
+	* plugin-rule-analyse.js --规则解析及运算 {:&.moveIn}
+	* plugin-rule-engine.js --规则引擎插件
 	* plugin-tip.js --提示信息
 	* plugin-util.js --工具
-	* plugin-json.js --json解析相关
+	* plugin-json.js --json工具类
 	* plugin-logger.js --提示信息
-	* plugin-money-format.js --工具
+	* plugin-money-format.js --金额数字千分位格式化
 	* plugin-validate.js --校验规则
-	* plugin-view-bind.js --数据绑定
-	* plugin-view-drow.js --动态行处理
+	* plugin-view-bind.js --视图绑定工具类
+	* plugin-view-drow.js --动态行操作工具类
 	* plugin-function.js --自定义函数（规则表达式已支持自定义函数校验和计算）
 [slide data-transition="bounceIn"]
 * framework.js
@@ -101,13 +106,16 @@ view.find("input").each(function () {
  ```
 [slide data-transition="moveIn"]
 ## 表单开发过程
-* 准备工作 {:&.moveIn}
-* 得到一份表单原型(xxx.html) 
+> **准备工作** 
+* 得到一份表单原型(xxx.html) {:&.moveIn}
 * 一份金三xsd格式下的json字符串
 * 根据json层级路径，绑定节点到相应单元格（格式为jpath="x.x.x.x.x"）
 * 配置nssb_dzbd(类似金三的nf_xtgl_bdmbdy)
 * 配置规则表达式,并生成规则文件
-* 
+[slide  data-transition="moveIn"]
+> jpath 是表单引擎和表单的桥梁
+> 二维表的jpath需要在重复节点后面跟[行序号/列序号]
+<img src="https://github.com/andylieonian/myppt/blob/master/image/jpath1.png?raw=true" class="img-responsive">
 [slide  data-transition="moveIn"]
 [magic data-transition="vertical3d"]
 ##表单效果如下
@@ -118,7 +126,7 @@ view.find("input").each(function () {
 ## 动态行处理
 * 表单中的动态行，这里以小规模中附表《增值税减免税申报明细表》为例说明
 ```
-//动态行所在table上加样式 
+/*动态行所在table上加样式*/
 <table class="zzssyyxgmnsrySbSbbdxxVO.zzsjmssbmxb jmmxb"> zzssyyxgmnsrySbSbbdxxVO.zzsjmssbmxb
 var tr = view.find("table."+key.replace(/\./g,"\\.")).find("tr");//根据样式来找到动态行所在位置
 <tr group="-1">//动态行所在table -><tr>加自定义标签group,用来标识哪一个动态行，
@@ -137,7 +145,7 @@ var tr = view.find("table."+key.replace(/\./g,"\\.")).find("tr");//根据样式�
 ```
 [/magic]
 [slide data-transition="moveIn"]
-## select处理
+## 下拉选择框处理
 ```
 /*配置html单元格,mode="mix"表示下拉框以dm|mc 形式显示；jpath为dm在json中路径，xpath为码表路径，
 zpath为mc在json中路径*/
@@ -152,7 +160,7 @@ zpath为mc在json中路径*/
 <input jflag="1" type="text" datatype="string" jpath="sbxxGrid.sbxxGridlbVO.zsxmDm" 
 xpath="../xml/dm_gy_zsxm.xml" zpath="sbxxGrid.sbxxGridlbVO.zsxmMc">
 ```
-> 表单使用smartMenu.css来制作右键增加/删除行（屏蔽自带的右键菜单，自己生成）
+> <small>表单使用smartMenu.css来制作右键增加/删除行（屏蔽自带的右键菜单，自己生成）</small>
 ----
 [slide  data-transition="moveIn"]
 [magic data-transition="vertical3d"]
@@ -160,5 +168,15 @@ xpath="../xml/dm_gy_zsxm.xml" zpath="sbxxGrid.sbxxGridlbVO.zsxmMc">
 ----
 [增值税减免税申报明细表](https://github.com/andylieonian/myppt/blob/master/image/dth.png?raw=true)
 <img src="https://github.com/andylieonian/myppt/blob/master/image/dth.png?raw=true" class="img-responsive">
+[/magic]
+[slide  data-transition="moveIn"]
+##规则表达式定义
+> 计算公式、校验公式以及单元格控制表达式统称为**规则表达式**，
+所有的规则表达式均配置在**nssb_gzbdsdy**中
+<img src="https://github.com/andylieonian/myppt/blob/master/image/gzbds1.png?raw=true" class="img-responsive">
+[slide  data-transition="moveIn"]
+> 规则表达式支持自定义函数
+<img src="https://github.com/andylieonian/myppt/blob/master/image/gzbds2.png?raw=true" class="img-responsive">
+[slide  data-transition="moveIn"]
 ##**QA**
-<small>谢谢大家，欢迎大家踊跃提问</small>
+<small>谢谢大家</small>
